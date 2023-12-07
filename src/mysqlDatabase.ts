@@ -1,7 +1,7 @@
 import mysql from 'mysql2';
 import { Database } from "./database";
 
-export class MySqlDatabase implements Database {
+class MySqlDatabase implements Database {
     pool: any;
 
     constructor(host: string, user: string, password: string, database: string) {
@@ -13,11 +13,26 @@ export class MySqlDatabase implements Database {
             database: database
         }
 
-        this.pool = mysql.createPool(config).promise();
+        try {
+            this.pool = mysql.createPool(config)
+        }
+        catch(err) {
+            console.log(err);
+            return;
+        }
+        this.pool = this.pool.promise();
     }
 
     async query(query: string) : Promise<object> {
-        const result: object = await this.pool.query(query);
-        return result
+        try {
+            const result: object = await this.pool.query(query);
+            return result;
+        }
+        catch(err) {
+            console.error(err);
+        }
     }
 }
+
+let mysqlDb = new MySqlDatabase("localhost", "root", "", "ais");
+export { mysqlDb };

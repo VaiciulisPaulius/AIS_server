@@ -5,10 +5,17 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
 
-import { PersonModel } from './person';
-import { MySqlDatabase } from './mysqlDatabase';
+import { Person } from './model/person';
+import { mysqlDb } from './mysqlDatabase';
 
-class Server {
+import { router } from './routes/student';
+import { authenticateRouter } from './routes/authenticate';
+
+//require('dotenv').config()
+import dotenv from 'dotenv/config'
+console.log(dotenv)
+
+export class Server {
     public static instance: Server;
     private app: express.Application;
     private server: http.Server;
@@ -46,16 +53,10 @@ class Server {
 
     private setupRoutes(): void {
         // Define your routes here
-        this.app.get('/', (req, res) => {
-            let personModel = new PersonModel("person");
-            let mysql = new MySqlDatabase("localhost", "root", "", "ais");
-
-            personModel.getAll(mysql)
-            
-            res.send("hello world");
-            
-        });
+        this.app.use("/", router);
+        this.app.use("/", authenticateRouter)
     }
 }
 
 let server: Server = new Server();
+export { server };

@@ -1,11 +1,7 @@
-import { Database } from "./database";
+import { Database } from "../database";
 
-export class Entity {
+export abstract class Entity {
     tableName: String;
-
-    constructor(tableName: string) {
-        this.tableName = tableName;
-    }
 
     async getAll(database: Database): Promise<object> {
         const result = await database.query(`SELECT * FROM ${this.tableName}`);
