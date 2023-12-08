@@ -1,7 +1,7 @@
 import { Entity } from "./entity";
 import { Database } from "database";
 
-type personType = {
+export type personType = {
     id: number,
     role_id: number,
     group_id: number,

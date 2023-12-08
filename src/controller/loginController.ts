@@ -7,25 +7,41 @@ import jwt from 'jsonwebtoken';
 import fsPromises from 'fs/promises'
 import path from 'path'
 import dotenv from 'dotenv'
+import { signedCookie } from "cookie-parser";
 
 class LoginController {
     login = async (req: Request, res: Response) => {
         const username: string = req.query.username as string;
         const password: string = req.query.password as string;
 
+        if(username === undefined || password === undefined) res.send("no login")
+
         const result: any = await person.authenticate(username, password, mysqlDb);
-        
-        console.log(process.env.ACCESS_TOKEN_SECRET)
 
         if(result != null) {
              const token = jwt.sign(
-                 { "username": result.username },
+                 { "payload": result },
                  process.env.ACCESS_TOKEN_SECRET,
                  { expiresIn: '1h' }
              )
              res.send({...result, token});
         }
     }
+    validate = async (req: Request, res: Response, next: Function) => {
+        const token: string = req.query.token as string;
+        if(token === undefined) res.send("no login");
+
+        try {
+            const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+            console.log(decoded)
+            req.query.token = decoded;
+            next()
+        } catch (error) {
+            console.error(error);
+            res.send("no login");
+        }
+    }
+
 }
 const loginController: LoginController = new LoginController();
 export { loginController };

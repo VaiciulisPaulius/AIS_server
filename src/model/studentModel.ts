@@ -1,10 +1,11 @@
 import { Person } from "./person";
 import { Database } from "../database";
 
-class Student extends Person {
+export class Student extends Person {
     tableName: String = "Person";
 
     async viewGrades(student_id: number, subject_id: number, collapse: boolean, database: Database): Promise<object> {
+        console.log(student_id, subject_id)
         if(student_id === undefined || student_id < 0) return;
         if(student_id === undefined || subject_id < 0) return;
 
@@ -25,22 +26,44 @@ class Student extends Person {
 
         WHERE person.id = ${student_id} AND subject_assignments.subject_id = ${subject_id}`;
 
-        return await database.query(query)
+        const result: any = await database.query(query);
+
+        return await result[0]
+    }
+    async getGroup(student_id: number, database: Database): Promise<object> {
+        if(student_id === undefined || student_id < 0) return;
+
+        let query = `SELECT student_group.id, group_name FROM student_group
+        JOIN person ON person.group_id = student_group.id
+        WHERE person.id = ${student_id}
+        `
+
+        const result: any = await database.query(query);
+
+        return await result[0]
     }
     async viewSubjects(student_id: number, database: Database) {
         if(student_id === undefined || student_id < 0) return;
 
-        let query = `SELECT subjects.id, subjects.subject, subjects.credits FROM subjects
+        let query = `SELECT subjects.id, subjects.subject, subjects.credits, study_program_group.semester FROM subjects
 
         JOIN group_subjects ON group_subjects.subject_id = subjects.id
         JOIN study_program_group ON study_program_group.id = group_subjects.study_program_group_id
         JOIN student_group ON study_program_group.id = student_group.study_program_group_id
         JOIN person ON person.group_id = student_group.id
-        LEFT JOIN extra_subjects ON extra_subjects.person_id = person.id
         
         WHERE person.id = ${student_id};`
 
-        return await database.query(query);
+        let result: any = await database.query(query);
+
+        let nextQuery = `SELECT subjects.id, subjects.subject, subjects.credits, extra_subjects.semester, extra_subjects.final_grade FROM subjects
+
+        JOIN extra_subjects ON extra_subjects.subject_id = subjects.id
+        WHERE extra_subjects.person_id = ${student_id};`
+
+        let nextResult: any = await database.query(nextQuery);
+
+        return nextResult[0];
     }
 }
 let student: Student = new Student();

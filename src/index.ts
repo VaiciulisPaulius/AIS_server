@@ -10,6 +10,7 @@ import { mysqlDb } from './mysqlDatabase';
 
 import { router } from './routes/student';
 import { authenticateRouter } from './routes/authenticate';
+import { lecturerRouter } from './routes/lecturer';
 
 //require('dotenv').config()
 import dotenv from 'dotenv/config'
@@ -55,6 +56,7 @@ export class Server {
         // Define your routes here
         this.app.use("/", router);
         this.app.use("/", authenticateRouter)
+        this.app.use("/", lecturerRouter)
     }
 }
 
